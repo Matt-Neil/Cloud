@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -28,7 +29,7 @@ public class BiGram {
 
             for (int i = 0; i < words.length; i++) {
                 if (i < words.length-1) {
-                    bigram.set(words[i] + " " + words[i+1]);
+                    bigram.set(words.get(i) + " " + words.get(i+1));
                     context.write(bigram, one);
                 }
             }
@@ -53,7 +54,7 @@ public class BiGram {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "bigrams");
-        job.setJarByClass(BGram.class);
+        job.setJarByClass(BiGram.class);
         job.setMapperClass(BGMapper.class);
         job.setReducerClass(BGReducer.class);
         job.setOuputKeyClass(Text.class);
