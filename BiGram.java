@@ -28,8 +28,8 @@ public class BiGram {
                 words.add(itr.nextToken());
             }
 
-            for (int i = 0; i < words.size; i++) {
-                if (i < words.size-1) {
+            for (int i = 0; i < words.size(); i++) {
+                if (i < words.size()-1) {
                     bigram.set(words.get(i) + " " + words.get(i+1));
                     context.write(bigram, one);
                 }
