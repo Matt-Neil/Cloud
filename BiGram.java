@@ -19,7 +19,8 @@ public class BiGram {
         private Text bigram = new Text();
         List words = new ArrayList();
 
-        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+        public void map(Object key, Text value, Context context
+                    ) throws IOException, InterruptedException {
             String sentence = value.toString().replaceAll("\\p{P}", "");
             StringTokenizer itr = new StringTokenizer(sentence);  
             
@@ -36,31 +37,31 @@ public class BiGram {
         }
     }
 
-    public static class BGReducer extends Reducer <Text, IntWritable, Text, IntWritable> {
+    public static class BGReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
         private IntWritable result = new IntWritable();
-        
-        public void reduce (Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            int sum = 0;
 
-            for (IntWritable val : values) {
-                sum += val.get();
-            }
-
-            result.set(sum);
-            context.write(key, result);
+        public void reduce(Text key, Iterable<IntWritable> values,
+                           Context context
+                           ) throws IOException, InterruptedException {
+          int sum = 0;
+          for (IntWritable val : values) {
+            sum += val.get();
+          }
+          result.set(sum);
+          context.write(key, result);
         }
-    }
+      }
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "bigrams");
+        Job job = Job.getInstance(conf, "bigram");
         job.setJarByClass(BiGram.class);
         job.setMapperClass(BGMapper.class);
         job.setReducerClass(BGReducer.class);
-        job.setOuputKeyClass(Text.class);
-        job.setInputValueClass(IntWritable.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.addOutputPath(job, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 }
