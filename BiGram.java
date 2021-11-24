@@ -20,11 +20,12 @@ public class BiGram {
 
     public static class BGMapper extends Mapper<Object, Text, Text, IntWritable>{
         private final static IntWritable one = new IntWritable(1);
-        private Text word = new Text();
+        private Text bigram = new Text();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String sentence = value.toString().replaceAll("\\p{P}", "");
             //StringTokenizer itr = new StringTokenizer(sentence);  
+            String words[];
             words = sentence.split("\\s+");
             
             // while (itr.hasMoreTokens()) {
