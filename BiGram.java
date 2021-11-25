@@ -17,6 +17,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.Partitioner;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableComparator;
 
 public class BiGram {
 
@@ -41,16 +43,9 @@ public class BiGram {
 
     public static class BGPartitioner extends Partitioner<Text,IntWritable> {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-            // final String regex1 = "/[^A-Z0-9]/ig";
-            // final String regex2 = "/[0-9]/g";
-            // final String regex3 = "/[A-E]/ig";
-            // final String regex4 = "/[F-J]/ig";
-            // final String regex5 = "/[K-O]/ig";
-            // final String regex6 = "/[P-T]/ig";
-            // final String regex7 = "/[V-Z]/ig";
             int reducer = 0;
             final String partitionKey = key.toString().substring(0, 1);
-            final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[V-Z]"};
+            final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[U-Z]"};
 
             for (int i = 0; i < regex.length; i++) {
                 Pattern pattern = Pattern.compile(regex[i], Pattern.CASE_INSENSITIVE);
@@ -61,24 +56,6 @@ public class BiGram {
                     break;
                 }
             }
-
-            // if (Pattern.matches("/[^A-Z0-9]/ig", partitionKey)) {
-            //     return 0;
-            // } else if (Pattern.matches("/[0-9]/g", partitionKey)) {
-            //     return 1;
-            // } else if (Pattern.matches("/[A-E]/ig", partitionKey)) {
-            //     return 2;
-            // } else if (Pattern.matches("/[F-J]/ig", partitionKey)) {
-            //     return 3;
-            // } else if (Pattern.matches("/[K-O]/ig", partitionKey)) {
-            //     return 4;
-            // } else if (Pattern.matches("/[P-T]/ig", partitionKey)) {
-            //     return 5;
-            // } else if (Pattern.matches("/[V-Z]/ig", partitionKey)) {
-            //     return 6;
-            // } else {
-            //     return 0;
-            // }
 
             return reducer;
         }
@@ -98,20 +75,29 @@ public class BiGram {
             context.write(key, result);
         }
     }
+
+    public static class BGComparator extends WritableComparator {
+        public int compare(WritableComparable one, WritableComparable two) {
+            int compare = one.compareTo(two);
+
+            return compare;
+        }
+    }
   
     public static void main(String[] args) throws Exception {
-      Configuration conf = new Configuration();
-      Job job = Job.getInstance(conf, "bigram");
-      job.setJarByClass(BiGram.class);
-      job.setMapperClass(BGMapper.class);
-      job.setReducerClass(BGReducer.class);
-      job.setCombinerClass(BGReducer.class);
-      job.setPartitionerClass(BGPartitioner.class);
-      job.setNumReduceTasks(7);
-      job.setOutputKeyClass(Text.class);
-      job.setOutputValueClass(IntWritable.class);
-      FileInputFormat.addInputPath(job, new Path(args[0]));
-      FileOutputFormat.setOutputPath(job, new Path(args[1]));
-      System.exit(job.waitForCompletion(true) ? 0 : 1);
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "bigram");
+        job.setJarByClass(BiGram.class);
+        job.setMapperClass(BGMapper.class);
+        job.setReducerClass(BGReducer.class);
+        job.setCombinerClass(BGReducer.class);
+        job.setPartitionerClass(BGPartitioner.class);
+        job.setSortComparatorClass(BGComparator.class);
+        job.setNumReduceTasks(7);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 }
