@@ -52,6 +52,7 @@ public class BiGram {
     public class TOPartitioner extends Partitioner<Text,IntWritable> {
         String partitionKey;
 
+        @Override
         public int getPartition(Text key, IntWritable value) {
             partitionKey = key.toString();
 
