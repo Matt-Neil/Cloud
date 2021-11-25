@@ -50,7 +50,7 @@ public class BiGram {
     }
 
     public class BGPartitioner extends Partitioner<Text,IntWritable> {
-        public int getPartition(Text key, IntWritable value) {
+        public int getPartition(Text key, IntWritable value, int numReduceTasks) {
             String partitionKey = key.toString();
 
             if (partitionKey.charAt(0) < 'E' || partitionKey.charAt(0) < 'e') {
