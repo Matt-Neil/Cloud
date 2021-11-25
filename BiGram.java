@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -59,19 +61,19 @@ public class BiGram {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
             String partitionKey = key.toString().substring(0, 1);
 
-            if (partitionKey.matches("/[^A-Z0-9]/ig")) {
+            if (Pattern.matches("/[^A-Z0-9]/ig", partitionKey)) {
                 return 0;
-            } else if (partitionKey.matches("/[0-9]/g")) {
+            } else if (Pattern.matches("/[0-9]/g", partitionKey)) {
                 return 1;
-            } if (partitionKey.matches("/[A-E]/ig")) {
+            } else if (Pattern.matches("/[A-E]/ig", partitionKey)) {
                 return 2;
-            } else if (partitionKey.matches("/[F-J]/ig")) {
+            } else if (Pattern.matches("/[F-J]/ig", partitionKey)) {
                 return 3;
-            } if (partitionKey.matches("/[K-O]/ig")) {
+            } else if (Pattern.matches("/[K-O]/ig", partitionKey)) {
                 return 4;
-            } else if (partitionKey.matches("/[P-T]/ig")) {
+            } else if (Pattern.matches("/[P-T]/ig", partitionKey)) {
                 return 5;
-            } else if (partitionKey.matches("/[V-Z]/ig")) {
+            } else if (Pattern.matches("/[V-Z]/ig", partitionKey)) {
                 return 6;
             } else {
                 return 0;
