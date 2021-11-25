@@ -57,7 +57,7 @@ public class BiGram {
 
     public static class BGPartitioner extends Partitioner<Text,IntWritable> {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-            String partitionKey = key.toString().charAt(0);
+            String partitionKey = key.toString().substring(0, 1);
 
             if (partitionKey.matches("/[^A-Z0-9]/ig")) {
                 return 0;
