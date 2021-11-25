@@ -77,10 +77,15 @@ public class BiGram {
     }
 
     public static class BGComparator extends WritableComparator {
-        public int compare(WritableComparable one, WritableComparable two) {
-            int compare = one.compareTo(two);
+        protected BGComparator() {
+            super(LetterWritable.class, true);
+        }
 
-            return compare;
+        public int compare(WritableComparable w1, WritableComparable w2) {
+            LetterWritable k1 = (LetterWritable) w1;
+            LetterWritable k2 = (LetterWritable) w2;
+            
+            return k1.compareTo(k2);
         }
     }
   
