@@ -27,7 +27,7 @@ public class BiGram {
             // String sentence = value.toString().trim().replaceAll("\\s{2,}", " ");
             // sentence = sentence.replaceAll("\\p{P}", "");
             String sentence = value.toString().replaceAll("\\p{P}", "");
-            sentence = sentence.replaceAll("\\s+", " ");
+            sentence = sentence.trim().replaceAll("\\s+", " ");
             //StringTokenizer itr = new StringTokenizer(sentence, " ");  
             String words[];
             words = sentence.split(" ");
@@ -57,23 +57,24 @@ public class BiGram {
 
     public static class BGPartitioner extends Partitioner<Text,IntWritable> {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-            String partitionKey = key.toString();
-            partitionKey.toLowerCase();
+            String partitionKey = key.toString().charAt(0);
 
-            if (partitionKey.charAt(0) < 'e') {
+            if (partitionKey.matches("/[^A-Z0-9]/ig")) {
                 return 0;
-            } else if (partitionKey.charAt(0) < 'i') {
+            } else if (partitionKey.matches("/[0-9]/g")) {
                 return 1;
-            } if (partitionKey.charAt(0) < 'm') {
+            } if (partitionKey.matches("/[A-E]/ig")) {
                 return 2;
-            } else if (partitionKey.charAt(0) < 'q') {
+            } else if (partitionKey.matches("/[F-J]/ig")) {
                 return 3;
-            } if (partitionKey.charAt(0) < 'u') {
+            } if (partitionKey.matches("/[K-O]/ig")) {
                 return 4;
-            } else if (partitionKey.charAt(0) < 'x') {
+            } else if (partitionKey.matches("/[P-T]/ig")) {
                 return 5;
-            } else {
+            } else if (partitionKey.matches("/[V-Z]/ig")) {
                 return 6;
+            } else {
+                return 0;
             }
         }
     }
