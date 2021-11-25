@@ -33,7 +33,8 @@ public class BiGram {
             String previousToken = itr.hasMoreTokens() ? itr.nextToken() : "";
             
             while (itr.hasMoreTokens()) {
-                bigram.add(previousToken + " " + itr.nextToken());
+                bigram.set(previousToken + " " + itr.nextToken());
+                context.write(bigram, one);
                 previousToken = itr.nextToken();
             }
 
