@@ -47,6 +47,19 @@ public class BiGram {
             }
         }
     }
+
+    public static class BGCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
+        private IntWritable result = new IntWritable();
+  
+        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+            int sum = 0;
+            for (IntWritable val : values) {
+            sum += val.get();
+            }
+            result.set(sum);
+            context.write(key, result);
+        }
+    }
   
     public static class BGReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
         private IntWritable result = new IntWritable();
@@ -66,6 +79,7 @@ public class BiGram {
       Job job = Job.getInstance(conf, "bigram");
       job.setJarByClass(BiGram.class);
       job.setMapperClass(BGMapper.class);
+      job.setCombinerClass(BGCombiner.class);
       job.setReducerClass(BGReducer.class);
       job.setOutputKeyClass(Text.class);
       job.setOutputValueClass(IntWritable.class);
