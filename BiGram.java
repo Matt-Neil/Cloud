@@ -49,21 +49,23 @@ public class BiGram {
         }
     }
 
-    public class TOPartitioner extends Partitioner<Text,IntWritable,Text,IntWritable> {
-        @Override
-        public int getPartition(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-    
-            if (key.state.compareTo("E") < 0) {
+    public class TOPartitioner extends Partitioner<Text,IntWritable> {
+        String partitionKey;
+
+        public int getPartition(Text key, IntWritable value) {
+            partitionKey = key.toString();
+
+            if (partitionKey.charAt(0) < 'E' || partitionKey.charAt(0) < 'e') {
                 return 0;
-            } else if (key.state.compareTo("I") < 0) {
+            } else if (partitionKey.charAt(0) < 'I' || partitionKey.charAt(0) < 'i') {
                 return 1;
-            } if (key.state.compareTo("M") < 0) {
+            } if (partitionKey.charAt(0) < 'M' || partitionKey.charAt(0) < 'm') {
                 return 2;
-            } else if (key.state.compareTo("Q") < 0) {
+            } else if (partitionKey.charAt(0) < 'Q' || partitionKey.charAt(0) < 'q') {
                 return 3;
-            } if (key.state.compareTo("U") < 0) {
+            } if (partitionKey.charAt(0) < 'U' || partitionKey.charAt(0) < 'u') {
                 return 4;
-            } else if (key.state.compareTo("X") < 0) {
+            } else if (partitionKey.charAt(0) < 'X' || partitionKey.charAt(0) < 'x') {
                 return 5;
             } else {
                 return 6;
