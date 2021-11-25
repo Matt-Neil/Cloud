@@ -51,7 +51,7 @@ public class BiGram {
 
     public class TOPartitioner extends Partitioner<Text,IntWritable,Text,IntWritable> {
         @Override
-        public int getPartition(CompositeKey key, DonationWritable value, int numPartitions) {
+        public int getPartition(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
     
             if (key.state.compareTo("E") < 0) {
                 return 0;
