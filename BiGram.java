@@ -49,12 +49,9 @@ public class BiGram {
         }
     }
 
-    public class TOPartitioner extends Partitioner<Text,IntWritable> {
-        String partitionKey;
-
-        @Override
+    public class BGPartitioner extends Partitioner<Text,IntWritable> {
         public int getPartition(Text key, IntWritable value) {
-            partitionKey = key.toString();
+            String partitionKey = key.toString();
 
             if (partitionKey.charAt(0) < 'E' || partitionKey.charAt(0) < 'e') {
                 return 0;
@@ -96,7 +93,7 @@ public class BiGram {
       job.setMapperClass(BGMapper.class);
       job.setReducerClass(BGReducer.class);
       job.setCombinerClass(BGReducer.class);
-      job.setPartitionerClass(TOPartitioner.class);
+      job.setPartitionerClass(BGPartitioner.class);
       job.setNumReduceTasks(7);
       job.setOutputKeyClass(Text.class);
       job.setOutputValueClass(IntWritable.class);
