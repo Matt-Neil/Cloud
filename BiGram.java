@@ -49,8 +49,8 @@ public class BiGram {
         }
     }
 
-    public static class BGPartitioner extends Partitioner<Text,Text> {
-        public int getPartition(Text key, Text value, int numReduceTasks) {
+    public static class BGPartitioner extends Partitioner<Text,IntWritabl> {
+        public int getPartition(Text key, IntWritable value, int numReduceTasks) {
             String partitionKey = key.toString();
 
             if (numReduceTasks == 7) {
