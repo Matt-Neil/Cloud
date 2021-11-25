@@ -24,40 +24,27 @@ public class BiGram {
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String sentence = value.toString().replaceAll("\\p{P}", "");
-            //StringTokenizer itr = new StringTokenizer(sentence);  
-            String words[];
-            words = sentence.split("\\s+");
+            StringTokenizer itr = new StringTokenizer(sentence);  
+            // String words[];
+            // words = sentence.split("\\s+");
             
-            // while (itr.hasMoreTokens()) {
-            //     words.add(itr.nextToken());
-            // }
+            while (itr.hasMoreTokens()) {
+                words.add(itr.nextToken());
+            }
 
-            // for (int i = 0; i < words.size(); i++) {
-            //     if (i < words.size()-1) {
-            //         bigram.set(words.get(i) + " " + words.get(i+1));
-            //         context.write(bigram, one);
-            //     }
-            // }
-
-            for (int i = 0; i < words.length; i++) {
-                if (i < words.length-1) {
-                    bigram.set(words[i] + " " + words[i+1]);
+            for (int i = 0; i < words.size(); i++) {
+                if (i < words.size()-1) {
+                    bigram.set(words.get(i) + " " + words.get(i+1));
                     context.write(bigram, one);
                 }
             }
-        }
-    }
 
-    public static class BGCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
-        private IntWritable result = new IntWritable();
-  
-        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            int sum = 0;
-            for (IntWritable val : values) {
-            sum += val.get();
-            }
-            result.set(sum);
-            context.write(key, result);
+            // for (int i = 0; i < words.length; i++) {
+            //     if (i < words.length-1) {
+            //         bigram.set(words[i] + " " + words[i+1]);
+            //         context.write(bigram, one);
+            //     }
+            // }
         }
     }
   
@@ -66,9 +53,11 @@ public class BiGram {
   
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             int sum = 0;
+
             for (IntWritable val : values) {
-            sum += val.get();
+                sum += val.get();
             }
+
             result.set(sum);
             context.write(key, result);
         }
@@ -79,8 +68,8 @@ public class BiGram {
       Job job = Job.getInstance(conf, "bigram");
       job.setJarByClass(BiGram.class);
       job.setMapperClass(BGMapper.class);
-      job.setCombinerClass(BGCombiner.class);
       job.setReducerClass(BGReducer.class);
+      job.setCombinerClass(BGReducer.class);
       job.setOutputKeyClass(Text.class);
       job.setOutputValueClass(IntWritable.class);
       FileInputFormat.addInputPath(job, new Path(args[0]));
