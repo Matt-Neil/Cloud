@@ -48,12 +48,12 @@ public class BiGram {
             // final String regex5 = "/[K-O]/ig";
             // final String regex6 = "/[P-T]/ig";
             // final String regex7 = "/[V-Z]/ig";
-            int reducer;
+            int reducer = 0;
             final String partitionKey = key.toString().substring(0, 1);
-            final String[] regex = {"/[^A-Z0-9]/ig", "/[0-9]/g", "/[A-E]/ig", "/[F-J]/ig", "/[K-O]/ig", "/[P-T]/ig", "/[V-Z]/ig"};
+            final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[V-Z]"};
 
             for (int i = 0; i < regex.length; i++) {
-                Pattern pattern = Pattern.compile(regex[i]);
+                Pattern pattern = Pattern.compile(regex[i], Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(partitionKey);
                 
                 if (matcher.matches()) {
