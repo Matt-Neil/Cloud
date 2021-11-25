@@ -43,11 +43,12 @@ public class BiGram {
 
     public static class BGPartitioner extends Partitioner<Text,IntWritable> {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-            int reducer = 0;
+            int reducer;
             final String partitionKey = key.toString().substring(0, 1);
             final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[U-Z]"};
 
             for (int i = 0; i < regex.length; i++) {
+                reducer = 0;
                 Pattern pattern = Pattern.compile(regex[i], Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(partitionKey);
                 
@@ -76,18 +77,18 @@ public class BiGram {
         }
     }
 
-    public static class BGComparator extends WritableComparator {
-        protected BGComparator() {
-            super(LetterWritable.class, true);
-        }
+    // public static class BGComparator extends WritableComparator {
+    //     protected BGComparator() {
+    //         super(LetterWritable.class, true);
+    //     }
 
-        public int compare(WritableComparable w1, WritableComparable w2) {
-            LetterWritable k1 = (LetterWritable) w1;
-            LetterWritable k2 = (LetterWritable) w2;
-            
-            return k1.compareTo(k2);
-        }
-    }
+    //     public int compare(WritableComparable w1, WritableComparable w2) {
+    //         LetterWritable k1 = (LetterWritable) w1;
+    //         LetterWritable k2 = (LetterWritable) w2;
+
+    //         return k1.compareTo(k2);
+    //     }
+    // }
   
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
@@ -97,7 +98,7 @@ public class BiGram {
         job.setReducerClass(BGReducer.class);
         job.setCombinerClass(BGReducer.class);
         job.setPartitionerClass(BGPartitioner.class);
-        job.setSortComparatorClass(BGComparator.class);
+        //job.setSortComparatorClass(BGComparator.class);
         job.setNumReduceTasks(7);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
