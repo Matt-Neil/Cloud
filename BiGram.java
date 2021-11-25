@@ -27,16 +27,17 @@ public class BiGram {
             // String sentence = value.toString().trim().replaceAll("\\s{2,}", " ");
             // sentence = sentence.replaceAll("\\p{P}", "");
             String sentence = value.toString().replaceAll("\\p{P}", "");
-            StringTokenizer itr = new StringTokenizer(sentence, " ");  
-            // String words[];
-            // words = sentence.split("\\s+");
-            String previousToken = itr.hasMoreTokens() ? itr.nextToken() : "";
+            sentence = sentence.replaceAll("\\s+", " ");
+            //StringTokenizer itr = new StringTokenizer(sentence, " ");  
+            String words[];
+            words = sentence.split(" ");
+            // String previousToken = itr.hasMoreTokens() ? itr.nextToken() : "";
             
-            while (itr.hasMoreTokens()) {
-                bigram.set(previousToken + " " + itr.nextToken());
-                context.write(bigram, one);
-                previousToken = itr.nextToken();
-            }
+            // while (itr.hasMoreTokens()) {
+            //     bigram.set(previousToken + " " + itr.nextToken());
+            //     context.write(bigram, one);
+            //     previousToken = itr.nextToken();
+            // }
 
             // for (int i = 0; i < words.size(); i++) {
             //     if (i < words.size()-1) {
@@ -45,12 +46,12 @@ public class BiGram {
             //     }
             // }
 
-            // for (int i = 0; i < words.length; i++) {
-            //     if (i < words.length-1) {
-            //         bigram.set(words[i] + " " + words[i+1]);
-            //         context.write(bigram, one);
-            //     }
-            // }
+            for (int i = 0; i < words.length; i++) {
+                if (i < words.length-1) {
+                    bigram.set(words[i] + " " + words[i+1]);
+                    context.write(bigram, one);
+                }
+            }
         }
     }
 
