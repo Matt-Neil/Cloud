@@ -42,7 +42,7 @@ public class BiGram {
 
             for (int i = 0; i < words.length; i++) {
                 if (i < words.length-1) {
-                    bigram.set(words[i] + " " + words[i+1]);
+                    bigram.set(words[i].replaceAll("\\s+", "") + " " + words[i+1].replaceAll("\\s+", ""));
                     context.write(bigram, one);
                 }
             }
