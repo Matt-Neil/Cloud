@@ -25,27 +25,10 @@ public class BiGram {
         private Text bigram = new Text();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            // String sentence = value.toString().trim().replaceAll("\\s{2,}", " ");
-            // sentence = sentence.replaceAll("\\p{P}", "");
             String sentence = value.toString().replaceAll("\\p{P}", "");
             sentence = sentence.trim().replaceAll("\\s+", " ");
-            //StringTokenizer itr = new StringTokenizer(sentence, " ");  
             String words[];
             words = sentence.split(" ");
-            // String previousToken = itr.hasMoreTokens() ? itr.nextToken() : "";
-            
-            // while (itr.hasMoreTokens()) {
-            //     bigram.set(previousToken + " " + itr.nextToken());
-            //     context.write(bigram, one);
-            //     previousToken = itr.nextToken();
-            // }
-
-            // for (int i = 0; i < words.size(); i++) {
-            //     if (i < words.size()-1) {
-            //         bigram.set(words.get(i) + " " + words.get(i+1));
-            //         context.write(bigram, one);
-            //     }
-            // }
 
             for (int i = 0; i < words.length; i++) {
                 if (i < words.length-1) {
@@ -58,25 +41,42 @@ public class BiGram {
 
     public static class BGPartitioner extends Partitioner<Text,IntWritable> {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-            String partitionKey = key.toString().substring(0, 1);
+            // final String regex1 = "/[^A-Z0-9]/ig";
+            // final String regex2 = "/[0-9]/g";
+            // final String regex3 = "/[A-E]/ig";
+            // final String regex4 = "/[F-J]/ig";
+            // final String regex5 = "/[K-O]/ig";
+            // final String regex6 = "/[P-T]/ig";
+            // final String regex7 = "/[V-Z]/ig";
+            final String partitionKey = key.toString().substring(0, 1);
+            final String[] regex = {"/[^A-Z0-9]/ig", "/[0-9]/g", "/[A-E]/ig", "/[F-J]/ig", "/[K-O]/ig", "/[P-T]/ig", "/[V-Z]/ig"};
 
-            if (Pattern.matches("/[^A-Z0-9]/ig", partitionKey)) {
-                return 0;
-            } else if (Pattern.matches("/[0-9]/g", partitionKey)) {
-                return 1;
-            } else if (Pattern.matches("/[A-E]/ig", partitionKey)) {
-                return 2;
-            } else if (Pattern.matches("/[F-J]/ig", partitionKey)) {
-                return 3;
-            } else if (Pattern.matches("/[K-O]/ig", partitionKey)) {
-                return 4;
-            } else if (Pattern.matches("/[P-T]/ig", partitionKey)) {
-                return 5;
-            } else if (Pattern.matches("/[V-Z]/ig", partitionKey)) {
-                return 6;
-            } else {
-                return 0;
+            for (int i = 0; i < regex.length; i++) {
+                Pattern pattern = Pattern.compile(regex[i]);
+                Matcher matcher = pattern.matcher(partitionKey);
+                
+                if (matcher.matches()) {
+                    return i;
+                }
             }
+
+            // if (Pattern.matches("/[^A-Z0-9]/ig", partitionKey)) {
+            //     return 0;
+            // } else if (Pattern.matches("/[0-9]/g", partitionKey)) {
+            //     return 1;
+            // } else if (Pattern.matches("/[A-E]/ig", partitionKey)) {
+            //     return 2;
+            // } else if (Pattern.matches("/[F-J]/ig", partitionKey)) {
+            //     return 3;
+            // } else if (Pattern.matches("/[K-O]/ig", partitionKey)) {
+            //     return 4;
+            // } else if (Pattern.matches("/[P-T]/ig", partitionKey)) {
+            //     return 5;
+            // } else if (Pattern.matches("/[V-Z]/ig", partitionKey)) {
+            //     return 6;
+            // } else {
+            //     return 0;
+            // }
         }
     }
   
