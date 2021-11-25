@@ -24,11 +24,12 @@ public class BiGram {
         private Text bigram = new Text();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String sentence = value.toString().trim().replaceAll("\\s{2,}", " ");
-            sentence = sentence.replaceAll("\\p{P}", "");
-            //StringTokenizer itr = new StringTokenizer(sentence);  
-            String words[];
-            words = sentence.split("\\s+");
+            // String sentence = value.toString().trim().replaceAll("\\s{2,}", " ");
+            // sentence = sentence.replaceAll("\\p{P}", "");
+            String sentence = value.toString().replaceAll("\\p{P}", "");
+            StringTokenizer itr = new StringTokenizer(sentence);  
+            String words[] = itr;
+            //words = sentence.split("\\s+");
             
             // while (itr.hasMoreTokens()) {
             //     words.add(itr.nextToken());
