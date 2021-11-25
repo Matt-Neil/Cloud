@@ -21,31 +21,30 @@ public class BiGram {
     public static class BGMapper extends Mapper<Object, Text, Text, IntWritable>{
         private final static IntWritable one = new IntWritable(1);
         private Text bigram = new Text();
-        List words = new ArrayList();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String sentence = value.toString().replaceAll("\\p{P}", "");
-            StringTokenizer itr = new StringTokenizer(sentence);  
-            // String words[];
-            // words = sentence.split("\\s+");
+            //StringTokenizer itr = new StringTokenizer(sentence);  
+            String words[];
+            words = sentence.split("\\s+");
             
-            while (itr.hasMoreTokens()) {
-                words.add(itr.nextToken());
-            }
+            // while (itr.hasMoreTokens()) {
+            //     words.add(itr.nextToken());
+            // }
 
-            for (int i = 0; i < words.size(); i++) {
-                if (i < words.size()-1) {
-                    bigram.set(words.get(i) + " " + words.get(i+1));
-                    context.write(bigram, one);
-                }
-            }
-
-            // for (int i = 0; i < words.length; i++) {
-            //     if (i < words.length-1) {
-            //         bigram.set(words[i] + " " + words[i+1]);
+            // for (int i = 0; i < words.size(); i++) {
+            //     if (i < words.size()-1) {
+            //         bigram.set(words.get(i) + " " + words.get(i+1));
             //         context.write(bigram, one);
             //     }
             // }
+
+            for (int i = 0; i < words.length; i++) {
+                if (i < words.length-1) {
+                    bigram.set(words[i] + " " + words[i+1]);
+                    context.write(bigram, one);
+                }
+            }
         }
     }
   
