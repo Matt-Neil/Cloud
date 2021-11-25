@@ -24,7 +24,7 @@ public class BiGram {
         private Text bigram = new Text();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String sentence = value.toString().trim().replaceAll(" +", " ");
+            String sentence = value.toString().trim().replaceAll("\\s{2,}", " ");
             sentence = sentence.replaceAll("\\p{P}", "");
             //StringTokenizer itr = new StringTokenizer(sentence);  
             String words[];
