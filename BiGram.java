@@ -51,19 +51,19 @@ public class BiGram {
 
     public static class BGPartitioner extends Partitioner<Text,IntWritable> {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-            String partitionKey = key.toString();
+            String partitionKey = key.toString().toLowerCase();
 
-            if (partitionKey.charAt(0) < 'E' || partitionKey.charAt(0) < 'e') {
+            if (partitionKey.charAt(0) < 'e') {
                 return 0;
-            } else if (partitionKey.charAt(0) < 'I' || partitionKey.charAt(0) < 'i') {
+            } else if (partitionKey.charAt(0) < 'i') {
                 return 1;
-            } if (partitionKey.charAt(0) < 'M' || partitionKey.charAt(0) < 'm') {
+            } if (partitionKey.charAt(0) < 'm') {
                 return 2;
-            } else if (partitionKey.charAt(0) < 'Q' || partitionKey.charAt(0) < 'q') {
+            } else if (partitionKey.charAt(0) < 'q') {
                 return 3;
-            } if (partitionKey.charAt(0) < 'U' || partitionKey.charAt(0) < 'u') {
+            } if (partitionKey.charAt(0) < 'u') {
                 return 4;
-            } else if (partitionKey.charAt(0) < 'X' || partitionKey.charAt(0) < 'x') {
+            } else if (partitionKey.charAt(0) < 'x') {
                 return 5;
             } else {
                 return 6;
