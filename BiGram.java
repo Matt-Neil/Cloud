@@ -1,5 +1,5 @@
-//Input -> gs://coc105/input/
-//Output -> gs://coc105/output/
+//Input -> gs://b929542-coc105/input/
+//Output -> gs://b929542-coc105/output/
 
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -27,9 +27,13 @@ public class BiGram {
         private Text bigram = new Text();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String sentence = value.toString().replaceAll("\\p{P}", "");
-            sentence = sentence.trim().replaceAll("\\s+", " ");
+            String line = value.toString();
             String words[];
+            final Pattern pattern = Pattern.compile("");
+            final Matcher matcher = pattern.matcher(line);
+
+            line = matcher.replaceAll("");
+            line = sentence.trim().replaceAll("\\s+", " ");
             words = sentence.split(" ");
 
             for (int i = 0; i < words.length; i++) {
@@ -43,7 +47,7 @@ public class BiGram {
 
     public static class BGPartitioner extends Partitioner<Text,IntWritable> {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-            int reducer;
+            int reducer = 0;
             final String partitionKey = key.toString().substring(0, 1);
             final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[U-Z]"};
 
@@ -77,18 +81,18 @@ public class BiGram {
         }
     }
 
-    // public static class BGComparator extends WritableComparator {
-    //     protected BGComparator() {
-    //         super(LetterWritable.class, true);
-    //     }
+    public static class BGComparator extends WritableComparator {
+        protected BGComparator() {
+            super(LetterWritable.class, true);
+        }
 
-    //     public int compare(WritableComparable w1, WritableComparable w2) {
-    //         LetterWritable k1 = (LetterWritable) w1;
-    //         LetterWritable k2 = (LetterWritable) w2;
+        public int compare(WritableComparable w1, WritableComparable w2) {
+            LetterWritable k1 = (LetterWritable) w1;
+            LetterWritable k2 = (LetterWritable) w2;
 
-    //         return k1.compareTo(k2);
-    //     }
-    // }
+            return k1.compareTo(k2);
+        }
+    }
   
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
@@ -98,7 +102,7 @@ public class BiGram {
         job.setReducerClass(BGReducer.class);
         job.setCombinerClass(BGReducer.class);
         job.setPartitionerClass(BGPartitioner.class);
-        //job.setSortComparatorClass(BGComparator.class);
+        job.setSortComparatorClass(BGComparator.class);
         job.setNumReduceTasks(7);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
