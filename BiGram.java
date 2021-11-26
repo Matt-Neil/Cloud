@@ -27,9 +27,10 @@ public class BiGram {
         private Text bigram = new Text();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String sentence = value.toString().replaceAll("\\p{P}", "");
-            sentence = sentence.trim().replaceAll("\\s+", " ");
             String words[];
+            String sentence = value.toString().replaceAll("[^a-zA-Z0-9]", "");
+
+            sentence = sentence.trim().replaceAll("\\s+", " ");
             words = sentence.split(" ");
 
             for (int i = 0; i < words.length; i++) {
@@ -45,7 +46,7 @@ public class BiGram {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
             int reducer = 0;
             final String partitionKey = key.toString().substring(0, 1);
-            final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[U-Z]"};
+            final String[] regex = {"[0-9]", "[A-D]", "[E-H]", "[I-L]", "[M-P]", "[Q-U]", "V-Z]"};
 
             for (int i = 0; i < regex.length; i++) {
                 reducer = 0;
