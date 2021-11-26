@@ -27,14 +27,10 @@ public class BiGram {
         private Text bigram = new Text();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String line = value.toString();
+            String sentence = value.toString().replaceAll("\\p{P}", "");
+            sentence = sentence.trim().replaceAll("\\s+", " ");
             String words[];
-            final Pattern pattern = Pattern.compile("");
-            final Matcher matcher = pattern.matcher(line);
-
-            line = matcher.replaceAll("");
-            line = line.trim().replaceAll("\\s+", " ");
-            words = line.split(" ");
+            words = sentence.split(" ");
 
             for (int i = 0; i < words.length; i++) {
                 if (i < words.length-1) {
