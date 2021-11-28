@@ -28,11 +28,9 @@ public class BiGram {
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String words[];
-            String sentence = value.toString();
+            String sentence = value.toString().replaceAll("\\p{P}", "");
 
-            sentence = sentence.replaceAll("[^a-zA-Z0-9]", "");
-            sentence = sentence.trim().replaceAll("\\s+", " ");
-            words = sentence.split(" ");
+            words = sentence.split("\\s\\s+");
 
             for (int i = 0; i < words.length; i++) {
                 if (i < words.length-1) {
@@ -43,26 +41,26 @@ public class BiGram {
         }
     }
 
-//     public static class BGPartitioner extends Partitioner<Text,IntWritable> {
-//         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-//             int reducer = 0;
-//             final String partitionKey = key.toString().substring(0, 1);
-//             final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[U-Z]"};
+    public static class BGPartitioner extends Partitioner<Text,IntWritable> {
+        public int getPartition(Text key, IntWritable value, int numReduceTasks) {
+            int reducer = 0;
+            final String partitionKey = key.toString().substring(0, 1);
+            final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[U-Z]"};
 
-//             for (int i = 0; i < regex.length; i++) {
-//                 reducer = 0;
-//                 Pattern pattern = Pattern.compile(regex[i], Pattern.CASE_INSENSITIVE);
-//                 Matcher matcher = pattern.matcher(partitionKey);
+            for (int i = 0; i < regex.length; i++) {
+                reducer = 0;
+                Pattern pattern = Pattern.compile(regex[i], Pattern.CASE_INSENSITIVE);
+                Matcher matcher = pattern.matcher(partitionKey);
                 
-//                 if (matcher.matches()) {
-//                     reducer = i;
-//                     break;
-//                 }
-//             }
+                if (matcher.matches()) {
+                    reducer = i;
+                    break;
+                }
+            }
 
-//             return reducer;
-//         }
-//     }
+            return reducer;
+        }
+    }
   
     public static class BGReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
         private IntWritable result = new IntWritable();
@@ -99,7 +97,7 @@ public class BiGram {
         job.setMapperClass(BGMapper.class);
         job.setReducerClass(BGReducer.class);
         job.setCombinerClass(BGReducer.class);
-//         job.setPartitionerClass(BGPartitioner.class);
+        job.setPartitionerClass(BGPartitioner.class);
         // job.setSortComparatorClass(BGComparator.class);
         job.setNumReduceTasks(7);
         job.setOutputKeyClass(Text.class);
