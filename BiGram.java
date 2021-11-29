@@ -6,8 +6,6 @@ import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.*;
-import java.io.DataInput;
-import java.io.DataOutput;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -19,45 +17,19 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.Partitioner;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
 public class BiGram {
 
     public class SortAlphabet implements WritableComparable<SortAlphabet> {
-        protected String key = new String();
-    
-        public String getKey() {
-            return key;
-        }
-    
-        public void setKey(String key) {
-            this.key = key;
-        }
-    
-        SortAlphabet(Text key) {
-            this.key = key.toString();
-        }
-    
-        SortAlphabet() {
-        }
-    
-        @Override
-        public void write(DataOutput d) throws IOException {
-            d.writeUTF(key);
-        }
-    
-        @Override
-        public void readFields(DataInput di) throws IOException {
-            key = di.readUTF();
-        }
+        private Text key = new String();
+        private IntWritable value = new IntWritable();
     
         @Override
         public int compareTo(SortAlphabet t) {
-            String thiskey = this.key;
-            String thatkey = t.key;
-    
-            return thiskey.compareTo(thatkey);
+            return this.key.compareTo(t.getKey()) != 0 ? this.key.compareTo(t.getKey()) : value.compareTo(t.getValue());
         }
     }
 
@@ -110,10 +82,7 @@ public class BiGram {
             SortAlphabet a_key = (SortAlphabet) a;
             SortAlphabet b_key = (SortAlphabet) b;
 
-            String thiskey = a_key.getKey();
-            String thatkey = b_key.getKey();
-
-            return thiskey.compareTo(thatkey);
+            return a_key.toLowerCase().compareTo(b_key.toLowerCase());
         }
     }
   
