@@ -6,6 +6,8 @@ import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.*;
+import java.io.DataInput;
+import java.io.DataOutput;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -22,15 +24,51 @@ import org.apache.hadoop.io.WritableComparator;
 
 public class BiGram {
 
+    public class SortAlphabet implements WritableComparable<MyWritableComparable> {
+        protected String key = new String();
+    
+        public String getKey() {
+            return key;
+        }
+    
+        public void setKey(String key) {
+            this.key = key;
+        }
+    
+        MyWritableComparable(Text key) {
+            this.key = key.toString();
+        }
+    
+        MyWritableComparable() {
+        }
+    
+        @Override
+        public void write(DataOutput d) throws IOException {
+            d.writeUTF(key);
+        }
+    
+        @Override
+        public void readFields(DataInput di) throws IOException {
+            key = di.readUTF();
+        }
+    
+        @Override
+        public int compareTo(MyWritableComparable t) {
+            String thiskey = this.key;
+            String thatkey = t.key;
+    
+            return thiskey.compareTo(thatkey);
+        }
+    }
+
     public static class BGMapper extends Mapper<Object, Text, Text, IntWritable>{
         private final static IntWritable one = new IntWritable(1);
         private Text bigram = new Text();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String words[];
-            String sentence = value.toString().replaceAll("\\p{P}", "");
-
-            words = sentence.split("\\s\\s+");
+            String text = value.toString().replaceAll("[^a-zA-Z0-9 ]", "");
+            words = text.trim().split("\\s+");
 
             for (int i = 0; i < words.length; i++) {
                 if (i < words.length-1) {
@@ -45,7 +83,7 @@ public class BiGram {
         public int getPartition(Text key, IntWritable value, int numReduceTasks) {
             int reducer = 0;
             final String partitionKey = key.toString().substring(0, 1);
-            final String[] regex = {"[^A-Z0-9]", "[0-9]", "[A-E]", "[F-J]", "[K-O]", "[P-T]", "[U-Z]"};
+            final String[] regex = {"[0-9]", "[A-D]", "[E-H]", "[I-L]", "[M-P]", "[Q-U]", "[V-Z]"};
 
             for (int i = 0; i < regex.length; i++) {
                 reducer = 0;
@@ -59,6 +97,23 @@ public class BiGram {
             }
 
             return reducer;
+        }
+    }
+
+    public static class BGComparator extends WritableComparator {
+        public BGComparator() {
+            super(SortAlphabet.class, true);
+        }
+
+        @Override
+        public int compare(WritableComparable a, WritableComparable b) {
+            SortAlphabet a_key = (SortAlphabet) a;
+            SortAlphabet b_key = (SortAlphabet) b;
+
+            String thiskey = a_key.getKey();
+            String thatkey = b_key.getKey();
+
+            return thiskey.compareTo(thatkey);
         }
     }
   
@@ -76,19 +131,6 @@ public class BiGram {
             context.write(key, result);
         }
     }
-
-    // public static class BGComparator extends WritableComparator {
-    //     protected BGComparator() {
-    //         super(LetterWritable.class, true);
-    //     }
-
-    //     public int compare(WritableComparable w1, WritableComparable w2) {
-    //         LetterWritable k1 = (LetterWritable) w1;
-    //         LetterWritable k2 = (LetterWritable) w2;
-
-    //         return k1.compareTo(k2);
-    //     }
-    // }
   
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
