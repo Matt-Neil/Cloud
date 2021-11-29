@@ -24,7 +24,7 @@ import org.apache.hadoop.io.WritableComparator;
 
 public class BiGram {
 
-    public class SortAlphabet implements WritableComparable<MyWritableComparable> {
+    public class SortAlphabet implements WritableComparable<SortAlphabet> {
         protected String key = new String();
     
         public String getKey() {
@@ -35,11 +35,11 @@ public class BiGram {
             this.key = key;
         }
     
-        MyWritableComparable(Text key) {
+        SortAlphabet(Text key) {
             this.key = key.toString();
         }
     
-        MyWritableComparable() {
+        SortAlphabet() {
         }
     
         @Override
@@ -53,7 +53,7 @@ public class BiGram {
         }
     
         @Override
-        public int compareTo(MyWritableComparable t) {
+        public int compareTo(SortAlphabet t) {
             String thiskey = this.key;
             String thatkey = t.key;
     
@@ -140,7 +140,7 @@ public class BiGram {
         job.setReducerClass(BGReducer.class);
         job.setCombinerClass(BGReducer.class);
         job.setPartitionerClass(BGPartitioner.class);
-        // job.setSortComparatorClass(BGComparator.class);
+        job.setSortComparatorClass(BGComparator.class);
         job.setNumReduceTasks(7);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
