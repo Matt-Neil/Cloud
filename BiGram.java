@@ -31,12 +31,14 @@ public class BiGram {
         public BG() {
         }
     
+        @Override
         public void write(DataOutput out) throws IOException {
-            key.write(out);
+            out.write(key);
         }
-          
+        
+        @Override
         public void readFields(DataInput in) throws IOException {
-            key.readFields(in);
+            key = in.readFields();
         }
 
         public int hashCode() {
