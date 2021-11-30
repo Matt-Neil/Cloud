@@ -27,6 +27,9 @@ public class BiGram {
         public BG(Text key) {
             this.key = key;
         }
+
+        public BG() {
+        }
     
         public void write(DataOutput out) throws IOException {
             out.writeString(key);
@@ -54,8 +57,7 @@ public class BiGram {
     }
 
     public class BGMapper extends Mapper<Object, Text, BG, IntWritable>{
-        private final static IntWritable one = new IntWritable(1);
-        private BG bigram = new BG();
+        private final IntWritable one = new IntWritable(1);
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String words[];
@@ -64,8 +66,7 @@ public class BiGram {
 
             for (int i = 0; i < words.length; i++) {
                 if (i < words.length-1) {
-                    bigram.set(words[i] + " " + words[i+1]);
-                    context.write(bigram, one);
+                    context.write(new BG(words[i] + " " + words[i+1]), one);
                 }
             }
         }
