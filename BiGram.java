@@ -6,6 +6,8 @@ import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.*;
+import java.io.DataInput;
+import java.io.DataOutput;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -23,19 +25,37 @@ import org.apache.hadoop.io.WritableComparator;
 
 public class BiGram {
 
-    public class SortAlphabet implements WritableComparable<SortAlphabet> {
-        private Text key = new String();
-        private IntWritable value = new IntWritable();
+    public class BG implements WritableComparable<BG> {
+        private String key;
     
-        @Override
-        public int compareTo(SortAlphabet t) {
-            return this.key.compareTo(t.getKey()) != 0 ? this.key.compareTo(t.getKey()) : value.compareTo(t.getValue());
+        public void write(DataOutput out) throws IOException {
+            out.writeString(key);
+        }
+          
+        public void readFields(DataInput in) throws IOException {
+            key = in.readString();
+        }
+
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+
+            result = prime * result + ((key == null) ? 0 : key.hashCode());
+
+            return result;
+        }
+          
+        public int compareTo(BG o) {
+            int thisValue = this.value;
+            int thatValue = o.value;
+
+            return (thisValue < thatValue ? -1 : (thisValue == thatValue ? 0 : 1));
         }
     }
 
-    public static class BGMapper extends Mapper<Object, Text, Text, IntWritable>{
+    public static class BGMapper extends Mapper<Object, Text, BG, IntWritable>{
         private final static IntWritable one = new IntWritable(1);
-        private Text bigram = new Text();
+        private Text bigram = new BG();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String words[];
@@ -51,8 +71,8 @@ public class BiGram {
         }
     }
 
-    public static class BGPartitioner extends Partitioner<Text,IntWritable> {
-        public int getPartition(Text key, IntWritable value, int numReduceTasks) {
+    public static class BGPartitioner extends Partitioner<BG,IntWritable> {
+        public int getPartition(BG key, IntWritable value, int numReduceTasks) {
             int reducer = 0;
             final String partitionKey = key.toString().substring(0, 1);
             final String[] regex = {"[0-9]", "[A-D]", "[E-H]", "[I-L]", "[M-P]", "[Q-U]", "[V-Z]"};
@@ -72,24 +92,24 @@ public class BiGram {
         }
     }
 
-    public static class BGComparator extends WritableComparator {
-        public BGComparator() {
-            super(SortAlphabet.class, true);
-        }
+    // public static class BGSortComparator extends WritableComparator {
+    //     public BGSortComparator() {
+    //         super(AlphabetComparable.class, true);
+    //     }
 
-        @Override
-        public int compare(WritableComparable a, WritableComparable b) {
-            SortAlphabet a_key = (SortAlphabet) a;
-            SortAlphabet b_key = (SortAlphabet) b;
+    //     @Override
+    //     public int compare(WritableComparable a, WritableComparable b) {
+    //         AlphabetComparable a_key = (AlphabetComparable) a;
+    //         AlphabetComparable b_key = (AlphabetComparable) b;
 
-            return a_key.toLowerCase().compareTo(b_key.toLowerCase());
-        }
-    }
+    //         return a_key.toLowerCase().compareTo(b_key.toLowerCase());
+    //     }
+    // }
   
-    public static class BGReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
+    public static class BGReducer extends Reducer<BG,IntWritable,BG,IntWritable> {
         private IntWritable result = new IntWritable();
   
-        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+        public void reduce(BG key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             int sum = 0;
 
             for (IntWritable val : values) {
@@ -109,7 +129,7 @@ public class BiGram {
         job.setReducerClass(BGReducer.class);
         job.setCombinerClass(BGReducer.class);
         job.setPartitionerClass(BGPartitioner.class);
-        job.setSortComparatorClass(BGComparator.class);
+        //job.setSortComparatorClass(BGSortComparator.class);
         job.setNumReduceTasks(7);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
