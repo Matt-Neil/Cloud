@@ -22,9 +22,9 @@ import org.apache.hadoop.io.*;
 public class BiGram {
 
     public class BG implements WritableComparable<BG> {
-        private Text key;
+        private String key;
 
-        public BG(Text key) {
+        public BG(String key) {
             this.key = key;
         }
 
@@ -32,11 +32,11 @@ public class BiGram {
         }
     
         public void write(DataOutput out) throws IOException {
-            out.writeString(key);
+            key.write(out);
         }
           
         public void readFields(DataInput in) throws IOException {
-            key = in.readString();
+            key.readFields(in);
         }
 
         public int hashCode() {
