@@ -53,9 +53,9 @@ public class BiGram {
         }
     }
 
-    public static class BGMapper extends Mapper<Object, Text, BG, IntWritable>{
+    public class BGMapper extends Mapper<Object, Text, BG, IntWritable>{
         private final static IntWritable one = new IntWritable(1);
-        private Text bigram = new BG();
+        private BG bigram = new BG();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String words[];
@@ -71,7 +71,7 @@ public class BiGram {
         }
     }
 
-    public static class BGPartitioner extends Partitioner<BG,IntWritable> {
+    public class BGPartitioner extends Partitioner<BG,IntWritable> {
         public int getPartition(BG key, IntWritable value, int numReduceTasks) {
             int reducer = 0;
             final String partitionKey = key.toString().substring(0, 1);
@@ -94,7 +94,7 @@ public class BiGram {
 
     // public static class BGSortComparator extends WritableComparator {
     //     public BGSortComparator() {
-    //         super(AlphabetComparable.class, true);
+    //         super(BG.class, true);
     //     }
 
     //     @Override
@@ -106,7 +106,7 @@ public class BiGram {
     //     }
     // }
   
-    public static class BGReducer extends Reducer<BG,IntWritable,BG,IntWritable> {
+    public class BGReducer extends Reducer<BG,IntWritable,BG,IntWritable> {
         private IntWritable result = new IntWritable();
   
         public void reduce(BG key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
@@ -121,7 +121,7 @@ public class BiGram {
         }
     }
   
-    public static void main(String[] args) throws Exception {
+    public void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "bigram");
         job.setJarByClass(BiGram.class);
