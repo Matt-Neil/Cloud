@@ -1,5 +1,5 @@
-//Input -> gs://b929542-coc105/input/
-//Output -> gs://b929542-coc105/output/
+//Input Directory -> gs://b929542-coc105/input/
+//Output Directory -> gs://b929542-coc105/output/
 
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -21,24 +21,31 @@ import org.apache.hadoop.io.*;
 
 public class BiGram {
 
-    public class BG implements WritableComparable<BG> {
-        private String key;
-
-        public BG(String key) {
-            this.key = key;
-        }
+    public static class BG implements WritableComparable<BG> {
+        private Text key;
 
         public BG() {
+            set(new Text());
+        }
+
+        public BG(Text key) {
+            set(new Text(key));
+        }
+
+        public void set(Text key) {
+            this.key = key;
         }
     
-        @Override
-        public void write(DataOutput out) throws IOException {
-            out.write(key);
+        public void write(DataOutput output) throws IOException {
+            key.write(output);
         }
         
-        @Override
-        public void readFields(DataInput in) throws IOException {
-            key = in.readFields();
+        public void readFields(DataInput input) throws IOException {
+            key.readFields(input);
+        }
+
+        public Text get() {
+            return key;
         }
 
         public int hashCode() {
@@ -51,15 +58,16 @@ public class BiGram {
         }
           
         public int compareTo(BG o) {
-            int thisValue = this.value;
-            int thatValue = o.value;
+            String thisKey = this.key.toString();
+            String thatKey = o.key.toString();
 
-            return (thisValue < thatValue ? -1 : (thisValue == thatValue ? 0 : 1));
+            return (thisKey.compareTo(thatKey) != 0 ? -1 : (thisKey == thatKey ? 0 : 1));
         }
     }
 
-    public class BGMapper extends Mapper<Object, Text, BG, IntWritable>{
+    public static class BGMapper extends Mapper<Object, Text, BG, IntWritable> {
         private final IntWritable one = new IntWritable(1);
+        private BG bigram = new BG();
   
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String words[];
@@ -68,16 +76,17 @@ public class BiGram {
 
             for (int i = 0; i < words.length; i++) {
                 if (i < words.length-1) {
-                    context.write(new BG(words[i] + " " + words[i+1]), one);
+                    bigram.set(new Text(words[i] + " " + words[i+1]));
+                    context.write(bigram, one);
                 }
             }
         }
     }
 
-    public class BGPartitioner extends Partitioner<BG,IntWritable> {
+    public static class BGPartitioner extends Partitioner<BG,IntWritable> {
         public int getPartition(BG key, IntWritable value, int numReduceTasks) {
             int reducer = 0;
-            final String partitionKey = key.toString().substring(0, 1);
+            final String partitionKey = key.get().toString().substring(0, 1);
             final String[] regex = {"[0-9]", "[A-D]", "[E-H]", "[I-L]", "[M-P]", "[Q-U]", "[V-Z]"};
 
             for (int i = 0; i < regex.length; i++) {
@@ -95,21 +104,42 @@ public class BiGram {
         }
     }
 
-    // public static class BGSortComparator extends WritableComparator {
-    //     public BGSortComparator() {
-    //         super(BG.class, true);
-    //     }
+    public static class BGSortComparator extends WritableComparator {
+        public BGSortComparator() {
+            super(BG.class, true);
+        }
 
-    //     @Override
-    //     public int compare(WritableComparable a, WritableComparable b) {
-    //         AlphabetComparable a_key = (AlphabetComparable) a;
-    //         AlphabetComparable b_key = (AlphabetComparable) b;
+        @Override
+        public int compare(WritableComparable a, WritableComparable b) {
+            BG a_key = (BG) a;
+            BG b_key = (BG) b;
 
-    //         return a_key.toLowerCase().compareTo(b_key.toLowerCase());
-    //     }
-    // }
+            String thisKey = a_key.get().toString();
+            String thatKey = b_key.get().toString();
+
+            return thisKey.toLowerCase().compareTo(thatKey.toLowerCase());
+        }
+    }
+
+    public class BGGroupComparator extends WritableComparator {
+
+        protected BGGroupComparator() {
+            super(BG.class, true);
+        }
+    
+        @Override
+        public int compare(WritableComparable a, WritableComparable b) {
+            BG a_key = (BG) a;
+            BG b_key = (BG) b;
+
+            String thisKey = a_key.get().toString();
+            String thatKey = b_key.get().toString();
+
+            return thisKey.toLowerCase().compareTo(thatKey.toLowerCase());
+        }
+    }
   
-    public class BGReducer extends Reducer<BG,IntWritable,BG,IntWritable> {
+    public static class BGReducer extends Reducer<BG,IntWritable,Text,IntWritable> {
         private IntWritable result = new IntWritable();
   
         public void reduce(BG key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
@@ -120,21 +150,22 @@ public class BiGram {
             }
 
             result.set(sum);
-            context.write(key, result);
+            context.write(new Text(key.get()), result);
         }
     }
   
-    public void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "bigram");
         job.setJarByClass(BiGram.class);
         job.setMapperClass(BGMapper.class);
         job.setReducerClass(BGReducer.class);
-        job.setCombinerClass(BGReducer.class);
+        //job.setCombinerClass(BGReducer.class);
         job.setPartitionerClass(BGPartitioner.class);
-        //job.setSortComparatorClass(BGSortComparator.class);
+        job.setSortComparatorClass(BGSortComparator.class);
+        job.setGroupingComparatorClass(BGGroupComparator.class);
         job.setNumReduceTasks(7);
-        job.setOutputKeyClass(Text.class);
+        job.setOutputKeyClass(BG.class);
         job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
