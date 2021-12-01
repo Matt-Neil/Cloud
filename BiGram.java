@@ -83,6 +83,36 @@ public class BiGram {
         }
     }
 
+    public static class BGCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
+        private IntWritable result = new IntWritable();
+  
+        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+            int sum = 0;
+
+            for (IntWritable val : values) {
+                sum += val.get();
+            }
+
+            result.set(sum);
+            context.write(key, result);
+        }
+    }
+
+    public static class BGReducer extends Reducer<BG,IntWritable,Text,IntWritable> {
+        private IntWritable result = new IntWritable();
+  
+        public void reduce(BG key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+            int sum = 0;
+
+            for (IntWritable val : values) {
+                sum += val.get();
+            }
+
+            result.set(sum);
+            context.write(new Text(key.get()), result);
+        }
+    }
+
     public static class BGPartitioner extends Partitioner<BG,IntWritable> {
         public int getPartition(BG key, IntWritable value, int numReduceTasks) {
             int reducer = 0;
@@ -120,24 +150,6 @@ public class BiGram {
             return thisKey.toLowerCase().compareTo(thatKey.toLowerCase());
         }
     }
-
-    public class BGGroupComparator extends WritableComparator {
-
-        protected BGGroupComparator() {
-            super(BG.class, true);
-        }
-    
-        @Override
-        public int compare(WritableComparable a, WritableComparable b) {
-            BG a_key = (BG) a;
-            BG b_key = (BG) b;
-
-            String thisKey = a_key.get().toString();
-            String thatKey = b_key.get().toString();
-
-            return thisKey.toLowerCase().compareTo(thatKey.toLowerCase());
-        }
-    }
   
     public static class BGReducer extends Reducer<BG,IntWritable,Text,IntWritable> {
         private IntWritable result = new IntWritable();
@@ -160,10 +172,9 @@ public class BiGram {
         job.setJarByClass(BiGram.class);
         job.setMapperClass(BGMapper.class);
         job.setReducerClass(BGReducer.class);
-        //job.setCombinerClass(BGReducer.class);
+        job.setCombinerClass(BGCombiner.class);
         job.setPartitionerClass(BGPartitioner.class);
         job.setSortComparatorClass(BGSortComparator.class);
-        job.setGroupingComparatorClass(BGGroupComparator.class);
         job.setNumReduceTasks(7);
         job.setOutputKeyClass(BG.class);
         job.setOutputValueClass(IntWritable.class);
